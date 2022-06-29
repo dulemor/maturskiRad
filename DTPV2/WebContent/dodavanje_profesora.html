@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Оцени професора - Додавање Професора</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script type="text/javascript" src="js/ProfesoriScript.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var user = localStorage.getItem("logged-user");
+			if (user == 'null' || (JSON.parse(user)).user_role == 1)
+			{
+				window.location = "index.html";
+			}
+			
+			$(document).ready(function(){
+				disableSubmit();
+			});
+			
+			function dodajProfesora()
+			{
+				var imageBase64 = $("#uploading-image").attr('src');
+				var ime = $("#name-input").val();
+				var prezime = $("#surname-input").val();
+				var predmet = $("#subject-input").val();
+				
+				var profesor = {
+						name: ime,
+						surname: prezime,
+						subject: predmet,
+						id: new Date().getTime(),
+						imageBase64: imageBase64
+				}
+				
+				$.ajax({
+					url:'rest/profs/add-profesor',
+					method:"POST",
+					contentType:'application/json',
+					data:JSON.stringify(profesor),
+					complete:function(data)
+					{
+						window.location = "index.html";
+					}
+				});
+			}
+			
+			function checkData()
+			{
+				disableSubmit();
+				var ime = $("#name-input").val();
+				var prezime = $("#surname-input").val();
+				var predmet = $("#subject-input").val();
+				
+				if ( !ime || !prezime || !predmet)
+				{
+					return;
+				}
+				
+				enableSubmit();
+			}
+			
+			function enableSubmit()
+			{
+				$("#submit-prof").removeAttr('disabled');
+			}
+			
+			function disableSubmit()
+			{
+				$("#submit-prof").attr('disabled', 'disabled');
+			}
+			
+			function logout()
+			{
+				localStorage.setItem("logged-user", null);
+				window.location = "index.html";
+			}
+			
+			function proslediSlikuProfesora()
+			{
+				var files = $("#prof-image")[0].files;
+				
+				var fileReader = new FileReader();
+				fileReader.onload = function(e){
+					console.log(e.target.result);
+					$("#uploading-image").attr('src', e.target.result);
+				}
+				fileReader.readAsDataURL(files[0]);
+			}
+			
+		</script>
+		<nav class="navbar navbar-inverse">
+			<div class="container-fluid">
+				<!-- NAVBAR BARND -->
+				<div class="navbar-header">
+					<a class="navbar-brand" href="index.html">Оцените Професора</a>
+				</div>
+				
+				<!-- NAVBAR RIGHT - REGISTER/LOGIN -->
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#" onclick="logout()"><span class="glyphicon glyphicon-log-out"></span> Излогујте се</a>
+				</ul>
+			</div>
+		</nav>
+		
+		<div class="container-fluid text-center">
+			<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<!-- ============ -->
+					<!-- MAIN CONTENT -->
+					<!-- ============ -->
+					
+					<div class="panel panel-info">
+						<div class="panel-heading">
+							Унесите Информације о Новом Професору
+						</div>
+						<div class="panel-body">
+							<form>
+								<div class="form-group">
+									<label for="file-upload">Слика:</label>
+									<input type="file" id="prof-image" class="form-control" placeholder="Slika Profesora" onchange="proslediSlikuProfesora()">
+									<img id="uploading-image" width="200px" height="200px" alt="Нисте одабрали слику.">
+								</div>
+								<div class="form-group">
+									<label for="name-input">Име:</label>
+									<input onkeyup="checkData()" type="text" class="form-control" id="name-input" placeholder="Име Професора"/>
+								</div>
+								<div class="form-group">
+									<label for="surname-input">Презиме:</label>
+									<input onkeyup="checkData()" type="text" class="form-control" id="surname-input" placeholder="Презиме Професора"/>
+								</div>
+								<div class="form-group">
+									<label for="subjectc-input">Предмет:</label>
+									<input onkeyup="checkData()" type="text" class="form-control" id="subject-input" placeholder="Држи Предмет"/>
+								</div>
+							</form>	
+						</div>
+						<div class="panel-footer">
+							<button class="btn btn-info" id="submit-prof" onclick="dodajProfesora()">Додај Професора</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Oceni Profesora - Registracija</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	</head>
+	<script type="text/javascript">
+		
+		var all_user_data = null;
+	
+		$(document).ready(function(){
+			$.ajax({
+				url:"rest/login-register-services/get-all-usernames-and-emails",
+				dataType:"application/json",
+				method:"GET",
+				complete:function(data)
+				{
+					console.log(data);
+					all_user_data = JSON.parse(data.responseText);
+				}
+			});	
+		});
+	
+		function enableLogin()
+		{
+			$("#register-button").removeAttr('disabled');
+		}
+		function disableLogin()
+		{
+			$("#register-button").attr('disabled', 'disabled');
+		}
+		
+		function proveriSve()
+		{
+			disableLogin();
+			var username = $("#username-input").val();
+			var password = $("#password-input").val();
+			var rpassword = $("#password-repeat").val();
+			var email = $("#email-input").val();
+			
+			if (!username || !password || !rpassword || !email)
+			{
+				return;
+			}
+			
+			for (var idx in all_user_data.usernames)
+			{
+				if (username == all_user_data.usernames[idx]) 
+				{
+					return;
+				}
+			}
+			
+			for (var idx in all_user_data.emails)
+			{
+				if ( email == all_user_data.emails[idx])
+				{
+					return;
+				}
+			}
+			
+			enableLogin();
+		}
+	
+		function proveriLozinku()
+		{
+			var pass = $("#password-input").val();
+			var rpass = $("#password-repeat").val();
+			if(pass != rpass)
+			{
+				disableLogin();
+				return;
+			}
+			
+			proveriSve();
+		}
+		
+		function registrujSe()
+		{
+			var username = $("#username-input").val();
+			var password = $("#password-input").val();
+			var rpassword = $("#password-repeat").val();
+			var email = $("#email-input").val();
+			var user = {
+					username: username,
+					password: password,
+					email: email,
+					user_role: 1
+			}
+			var user_json = JSON.stringify(user);
+			$.ajax({
+				url:'rest/login-register-services/register-user',
+				method:"POST",
+				data: user_json,
+				contentType:'application/json',
+				complete:function(data)
+				{
+					alert("Успешна регистрација!");
+					window.location = "index.html";
+				}
+			});
+		}
+	</script>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3> Унесите своје податке </h3>
+						</div>
+						<div class="panel-body">
+							<form>
+								<div class="form-group">
+									<label for="username-input">Корисничко име:</label>
+									<input onkeyup="proveriSve()" type="text" class="form-control" id="username-input" placeholder="Корисничко Име"/>
+								</div>
+								<div class="form-group">
+									<label for="password-input">Лозинка:</label>
+									<input type="password" onkeyup="proveriLozinku()" class="form-control" id="password-input" placeholder="Лозинка"/>
+								</div>
+								<div class="form-group">
+									<label for="password-repeat">Поновите лозинку:</label>
+									<input onkeyup="proveriLozinku()" type="password" class="form-control" id="password-repeat" placeholder="Поновите Лозинку"/>
+								</div>
+								<div class="form-group">
+									<label for="email-input">Е-пошта:</label>
+									<input onkeyup="proveriSve()" type="email" class="form-control" id="email-input" placeholder="Е-пошта">
+								</div>
+							</form>									
+						</div>
+						<div class="panel-footer">
+							<button class="btn btn-info" id="register-button" onclick="registrujSe()" disabled="disabled">Региструј Се</button>
+						</div>
+					</div>				
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
